@@ -36,16 +36,19 @@ end
 --- Base function for creating an actor by filling all it's fields. Actually it
 -- just sets health as 0 but there is really no need to set health here. An
 -- actor is something that flies around under it's own free will in the game.
--- @param img    is the image to render the actor with.
--- @param x      is the starting x position
--- @param y      is the starting y position
-function types.actor(x, y, vx, vy)
+-- @param img is the image to render the actor with.
+-- @param x   is the starting x position
+-- @param y   is the starting y position
+-- @param vx  is the starting x velocity.
+-- @param vy  is the starting y velocity.
+function types.actor(img, x, y, vx, vy)
     return {
+        img = img,
         x = x,
         y = y,
-        health = 0,
-        update = update,
-        render = render
+        vx = vx,
+        vy = vy,
+        health = 0
     }
 end
 
