@@ -1,4 +1,12 @@
+--- This module when required returns you a big table with some methods that
+-- basically consist of the game's state. It's methods should all pertain to
+-- the logic of the game rather than it's content if you catch my drift.
+-- Implementing code that tells the game how to render the screen each frame is
+-- cool, whereas adding code telling the game what the main menu should say or
+-- whatever probably is not cool.
+
 local util = require 'util'
+local assets = require 'assets'
 local types = require 'types'
 
 local game = {
@@ -6,17 +14,21 @@ local game = {
     debug = true,
     playerShotCooldown = 0.1,
     playerSpeed = 250,
+    messageTime = 0.6,
     -- game globals
+    bgr = 0,
+    bgg = 0.1,
+    bgb = 0.01,
+    assets = assets('assets/'),
+    script = nil,
     message = nil,
     music = nil,
-    danyImg = nil,
-    idiotImg = nil,
-    bulletImg = nil,
     bullets = {},
     actors = {},
     player = nil,
     playerCooldown = 0,
-    gunCycle = 0
+    gunCycle = 0,
+    messageCycle = 0
 }
 
 function game.createPauseMenu(self)
@@ -33,38 +45,16 @@ function game.createPauseMenu(self)
     )
 end
 
-function game.createCredits(self)
-    times = 0
-    return types.message(
-        self.danyImg,
-        'Dany Burton',
-        'AGame by Dabny BARGON press h seven times to return',
-        function (s, key)
-            if key == 'h' then
-                times = times + 1
-                if times > 6 then
-                    return self:createMainMenu()
-                end
-            end
-            return s
-        end
-    )
+function game.setMessage(self, message)
+    self.message = message
+    self.messageCycle = 0
+    self.assets:getSound('beep.wav'):play()
 end
 
-function game.createMainMenu(self)
-    return types.message(
-        self.idiotImg,
-        'Brexit Gunner',
-        'Welcome to Brexit Gunner, press z to play, press p to read the credits',
-        function (s, key)
-            if key == 'z' then
-                -- TODO: set up the first level
-                return nil
-            elseif key == 'p' then return self:createCredits()
-            else return s
-            end
-        end
-    )
+function game.setScript(self, func)
+    self.script = coroutine.create(func)
+    local code, err = coroutine.resume(self.script, self)
+    if not code then print(err) end
 end
 
 function game.bulletUpdate(self, delta)
@@ -106,7 +96,7 @@ function game.playerUpdate(self, delta)
                     self.player,
                     math.pi + math.sin(self.gunCycle * 9) * 0.09,
                     500,
-                    self.bulletImg
+                    self.assets:getPic('playerBullet.png')
                 )
             )
             self.playerCooldown = self.playerShotCooldown
@@ -116,25 +106,71 @@ end
 
 function game.normalUpdate(self, delta)
     if love.keyboard.isDown('escape') then
-        self.message = self:createPauseMenu()
+        self:setMessage(self:createPauseMenu())
     end
     if self.player ~= nil then
         self:playerUpdate(delta)
         self.player.x = util.wrap(self.player.x, 0, love.graphics.getWidth())
         self.player.y = util.clamp(self.player.y, 0, love.graphics.getHeight())
     end
+    if self.script ~= nil and coroutine.status(self.script) ~= 'dead' then
+        local code, err = coroutine.resume(self.script, delta)
+        if not code then print(err) end
+    else
+        return false
+    end
     self:bulletUpdate(delta)
+    return true
 end
 
 function game.update(self, delta)
-    if self.message == nil then self:normalUpdate(delta)
+    if self.message == nil then
+        return self:normalUpdate(delta)
     else
+        self.messageCycle = self.messageCycle + delta
         self:bulletUpdate(delta)
+    end
+    return true
+end
+
+function game.messageDraw(self)
+    boost = math.random()
+    love.graphics.setColor(
+        boost * boost,
+        math.random() / math.random(),
+        boost * boost,
+        boost
+    )
+    love.graphics.setLineWidth(4)
+    local scale = math.min(1, self.messageCycle / self.messageTime)
+    local width = self.message.img:getWidth() * scale
+    local left = (love.graphics.getWidth() - width) / 2
+    love.graphics.draw(self.message.img, left, 0, 0, scale, 1)
+    love.graphics.rectangle(
+        'line',
+        left,
+        0,
+        width,
+        self.message.img:getHeight()
+    )
+    if self.messageCycle >= self.messageTime then
+        love.graphics.printf(
+            self.message.name,
+            left,
+            0,
+            width
+        )
+        love.graphics.printf(
+            self.message.text,
+            0,
+            self.message.img:getHeight(),
+            love.graphics.getWidth()
+        )
     end
 end
 
 function game.draw(self)
-    --love.graphics.clear(251/255, 182/255, 3/255)
+    love.graphics.clear(self.bgr, self.bgg, self.bgb)
     love.graphics.setColor(1, 1, 1)
     -- Draw the player
     if self.player ~= nil then
@@ -145,40 +181,7 @@ function game.draw(self)
         util.drawCentered(bullet.img, bullet.x, bullet.y)
     end
     -- Draw the message if there is one.
-    if self.message ~= nil then
-        boost = math.random()
-        love.graphics.setColor(
-            boost * boost,
-            math.random() / math.random(),
-            boost * boost,
-            boost
-        )
-        love.graphics.setLineWidth(4)
-        love.graphics.draw(
-            self.message.img,
-            (love.graphics.getWidth() - self.message.img:getWidth()) / 2,
-            0
-        )
-        love.graphics.rectangle(
-            'line',
-            (love.graphics.getWidth() - self.message.img:getWidth()) / 2,
-            0,
-            self.message.img:getWidth(),
-            self.message.img:getHeight()
-        )
-        love.graphics.printf(
-            self.message.name,
-            (love.graphics.getWidth() - self.message.img:getWidth()) / 2,
-            0,
-            self.message.img:getWidth()
-        )
-        love.graphics.printf(
-            self.message.text,
-            0,
-            self.message.img:getHeight(),
-            love.graphics.getWidth()
-        )
-    end
+    if self.message ~= nil then self:messageDraw() end
 end
 
 return game

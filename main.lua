@@ -1,40 +1,32 @@
+--- This file is the start point of the game and is just for setting up the
+-- game and implementing love's callback functions and hooking them up to our
+-- stuff.
+
 local util = require 'util'
 local types = require 'types'
 local game = require 'game'
 
-function start()
-    game.music:play()
-    game.message = game:createMainMenu()
-end
-
-function messageUpdate(delta)
-    bulletUpdate(delta)
-end
-
 function love.load()
     love.graphics.setNewFont(20)
-    game.music = love.audio.newSource('assets/ging.ogg', 'stream')
-    game.idiotImg = love.graphics.newImage('assets/idiot.png')
-    game.bulletImg = love.graphics.newImage('assets/playerBullet.png')
-    game.danyImg = love.graphics.newImage('assets/dany.png')
-    game.player = types.actor(
-        love.graphics.newImage('assets/plane.png'),
-        200,
-        600,
-        0,
-        0
-    )
-    start()
+    game.player = types.actor(game.assets:getPic('plane.png'), 200, 600, 0, 0)
+    game:setScript(require 'levels.start')
 end
 
 function love.keypressed(key)
     if game.message ~= nil then
-        game.message = game.message:processor(key)
+        local message = game.message:processor(key)
+        if message == nil then
+            game.message = nil
+        elseif message ~= game.message then
+            game:setMessage(message)
+        end
     end
 end
 
 function love.update(delta)
-    game:update(delta)
+    if not game:update(delta) then
+        love.event.push('quit')
+    end
 end
 
 function love.draw(delta)

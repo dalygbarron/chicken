@@ -1,3 +1,7 @@
+--- Point of this file is to give definitive forms of the different types like
+-- bullet and messages etc, plus some functions for different ways of
+-- constructing them that are convenient.
+
 local types = {}
 
 --- Base function for creating a message object, which takes all it's
@@ -29,8 +33,7 @@ end
 -- @param ...       is all the lines of text to append together.
 -- @return the new message you have created.
 function types.writeMessage(img, name, processor, ...)
-    
-
+    -- TODO: this
 end
 
 --- Base function for creating an actor by filling all it's fields. Actually it
