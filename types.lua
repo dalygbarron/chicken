@@ -41,26 +41,28 @@ end
 --- Base function for creating an actor by filling all it's fields. Actually it
 -- just sets health as 0 but there is really no need to set health here. An
 -- actor is something that flies around under it's own free will in the game.
--- @param img is the image to render the actor with.
--- @param x   is the starting x position
--- @param y   is the starting y position
--- @param vx  is the starting x velocity.
--- @param vy  is the starting y velocity.
-function types.actor(img, x, y, vx, vy)
+-- @param img    is the image to render the actor with.
+-- @param x      is the starting x position
+-- @param y      is the starting y position
+-- @param radius is the actor's collision radius. If you omit this argument it
+--               will use half the image width.
+function types.actor(img, x, y, radius)
+    if radius == nil then radius = img:getWidth() / 2 end
     return {
         img = img,
         x = x,
         y = y,
-        vx = vx,
-        vy = vy,
-        health = 0
+        vx = 0,
+        vy = 0,
+        health = 0,
+        radiusSquared = radius * radius
     }
 end
 
 --- Creates a prototypal bullet that actual bullets are mere copies of.
 -- @param img is the bullet image which provides the radius and stuff
 -- @return the protobullet
-function protobullet(img)
+function types.protobullet(img)
     local radius = img:getWidth() / 2
     return {
         img = img,

@@ -25,6 +25,7 @@ local game = {
     music = nil,
     bullets = {},
     actors = {},
+    playerBulletPrototype = nil,
     player = nil,
     playerCooldown = 0,
     gunCycle = 0,
@@ -33,7 +34,7 @@ local game = {
 
 function game.createPauseMenu(self)
     return types.message(
-        self.idiotImg,
+        self.assets:getPic('idiot.png'),
         'Pause Menu',
         'Press Z to keep vibing. Press t to quit?',
         function (self, key)
@@ -93,6 +94,7 @@ function game.playerUpdate(self, delta)
             table.insert(
                 self.bullets,
                 types.aimedBullet(
+                    self.playerProtobullet,
                     self.player,
                     math.pi + math.sin(self.gunCycle * 9) * 0.09,
                     500,
@@ -118,6 +120,15 @@ function game.normalUpdate(self, delta)
         if not code then print(err) end
     else
         return false
+    end
+    for i, actor in ipairs(self.actors) do
+        actor.x = util.wrap(
+            actor.x + actor.vx * delta,
+            0,
+            love.graphics.getWidth()
+        )
+        actor.y = actor.y + actor.vy * delta
+        -- TODO: destory when it leaves via top or bottom.
     end
     self:bulletUpdate(delta)
     return true
@@ -172,13 +183,17 @@ end
 function game.draw(self)
     love.graphics.clear(self.bgr, self.bgg, self.bgb)
     love.graphics.setColor(1, 1, 1)
+    -- Draw the other actors
+    for i, actor in ipairs(self.actors) do
+        util.drawCentered(actor.img, actor.x, actor.y)
+    end
     -- Draw the player
     if self.player ~= nil then
         util.drawCentered(self.player.img, self.player.x, self.player.y)
     end
     -- Draw the bullets
     for i, bullet in ipairs(self.bullets) do
-        util.drawCentered(bullet.img, bullet.x, bullet.y)
+        util.drawCentered(bullet.proto.img, bullet.x, bullet.y)
     end
     -- Draw the message if there is one.
     if self.message ~= nil then self:messageDraw() end

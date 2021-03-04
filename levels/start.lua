@@ -41,6 +41,9 @@ return function (game)
     util.wait(5)
     local wavers = {}
     for i=1, 5 do
-            
+        table.insert(
+            game.actors,
+            types.actor(game.assets:getPic('plane.png'), 0, 0)
+        )
     end
 end
