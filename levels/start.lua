@@ -36,8 +36,11 @@ end
 
 return function (game)
     game.assets:getSong('ging.ogg'):play()
-    util.wait(5)
+    util.wait(1)
     game:setMessage(createMainMenu(game.assets))
     util.wait(5)
-    game:setMessage(createMainMenu(game.assets))
+    local wavers = {}
+    for i=1, 5 do
+            
+    end
 end

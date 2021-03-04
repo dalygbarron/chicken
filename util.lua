@@ -57,6 +57,7 @@ function util.wait(time)
     while time > 0 do
         time = time - coroutine.yield()
     end
+    return math.abs(time)
 end
 
 return util

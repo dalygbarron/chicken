@@ -33,7 +33,9 @@ end
 -- @param ...       is all the lines of text to append together.
 -- @return the new message you have created.
 function types.writeMessage(img, name, processor, ...)
-    -- TODO: this
+    local text = ''
+    for i, v in ipairs(arg) do
+    end
 end
 
 --- Base function for creating an actor by filling all it's fields. Actually it
@@ -55,8 +57,20 @@ function types.actor(img, x, y, vx, vy)
     }
 end
 
+--- Creates a prototypal bullet that actual bullets are mere copies of.
+-- @param img is the bullet image which provides the radius and stuff
+-- @return the protobullet
+function protobullet(img)
+    local radius = img:getWidth() / 2
+    return {
+        img = img,
+        radiusSquared = radius * radius
+    }
+end
+
 --- Base function for creating a bullet by filling all it's fields. A bullet is
 -- obviously the little objects actors shoot at each other.
+-- @param proto is the prototype this bullet is based on.
 -- @param owner is the actor shooting the bullet.
 -- @param x     is the starting x position of the bullet.
 -- @param y     is the starting y position of the bullet.
@@ -64,37 +78,37 @@ end
 -- @param vy    is the starting y velocity of the bullet.
 -- @param gx    is the x acceleration of the bullet.
 -- @param gy    is the y acceleration of the bullet.
--- @param img   is the rendering image of the bullet.
 -- @return the bullet.
-function types.bullet(owner, x, y, vx, vy, gx, gy, img)
+function types.bullet(proto, owner, x, y, vx, vy, gx, gy)
     return {
+        proto = proto,
         owner = owner,
         x = x,
         y = y,
         vx = vx,
         vy = vy,
         gx = gx,
-        gy = gy,
-        img = img
+        gy = gy
     }
 end
 
 --- Creates a bullet that has velocity set by an angle and speed, and it's
 -- starting position is that of it's owner.
+-- @param proto is the prototype this bullet is based on.
 -- @param owner is the shooter of the bullet.
 -- @param angle is the angle to shoot it in.
 -- @param speed is the speed with which to shoot it.
 -- @param img   is the image to render the bullet with.
-function types.aimedBullet(owner, angle, speed, img)
+function types.aimedBullet(proto, owner, angle, speed)
     return types.bullet(
+        proto,
         owner,
         owner.x,
         owner.y,
         math.sin(angle) * speed,
         math.cos(angle) * speed,
         0,
-        0,
-        img
+        0
     )
 end
 
