@@ -35,6 +35,7 @@ end
 function types.writeMessage(img, name, processor, ...)
     local text = ''
     for i, v in ipairs(arg) do
+        -- TODO: everything
     end
 end
 
@@ -44,17 +45,20 @@ end
 -- @param img    is the image to render the actor with.
 -- @param x      is the starting x position
 -- @param y      is the starting y position
+-- @param health is the actor's starting health which defaults to 1.
 -- @param radius is the actor's collision radius. If you omit this argument it
 --               will use half the image width.
-function types.actor(img, x, y, radius)
-    if radius == nil then radius = img:getWidth() / 2 end
+function types.actor(img, x, y, health, radius)
+    if radius == nil then radius = img:getWidth() / 2 * 0.8 end
+    if health == nil then health = 1 end
     return {
+        control = nil,
         img = img,
         x = x,
         y = y,
         vx = 0,
         vy = 0,
-        health = 0,
+        health = health,
         radiusSquared = radius * radius
     }
 end
@@ -76,12 +80,16 @@ end
 -- @param owner is the actor shooting the bullet.
 -- @param x     is the starting x position of the bullet.
 -- @param y     is the starting y position of the bullet.
--- @param vx    is the starting x velocity of the bullet.
--- @param vy    is the starting y velocity of the bullet.
--- @param gx    is the x acceleration of the bullet.
--- @param gy    is the y acceleration of the bullet.
+-- @param vx    is the starting x velocity of the bullet. defaults to 0.
+-- @param vy    is the starting y velocity of the bullet. defaults to 0.
+-- @param gx    is the x acceleration of the bullet. defaults to 0.
+-- @param gy    is the y acceleration of the bullet. defaults to 0.
 -- @return the bullet.
 function types.bullet(proto, owner, x, y, vx, vy, gx, gy)
+    if vx == nil then vx = 0 end
+    if vy == nil then vy = 0 end
+    if gx == nil then gx = 0 end
+    if gy == nil then gy = 0 end
     return {
         proto = proto,
         owner = owner,
@@ -92,26 +100,6 @@ function types.bullet(proto, owner, x, y, vx, vy, gx, gy)
         gx = gx,
         gy = gy
     }
-end
-
---- Creates a bullet that has velocity set by an angle and speed, and it's
--- starting position is that of it's owner.
--- @param proto is the prototype this bullet is based on.
--- @param owner is the shooter of the bullet.
--- @param angle is the angle to shoot it in.
--- @param speed is the speed with which to shoot it.
--- @param img   is the image to render the bullet with.
-function types.aimedBullet(proto, owner, angle, speed)
-    return types.bullet(
-        proto,
-        owner,
-        owner.x,
-        owner.y,
-        math.sin(angle) * speed,
-        math.cos(angle) * speed,
-        0,
-        0
-    )
 end
 
 return types

@@ -37,6 +37,21 @@ function util.clamp(value, min, max)
     return math.max(min, math.min(value, max))
 end
 
+--- Kind of like clamp except it literally has to be one of them and nothing
+-- else. Another way of saying it is it just chooses the closest of two
+-- options. There is no in between allowed even if it's split midway. If it's
+-- midway then essentially either is as valid as the other so what you get is
+-- arbitrary.
+-- @param value is the value used to choose.
+-- @param a     is the first choice.
+-- @param b     is the second choice.
+-- @return the one that was closer
+function util.closer(value, a, b)
+    if math.abs(value - a) < math.abs(value - b) then return a
+    else return b
+    end
+end
+
 --- Draws a love image thingy by passing the middle point instead of the top
 -- left corner.
 -- @param img is the image to draw.
@@ -50,18 +65,56 @@ function util.drawCentered(img, x, y)
     )
 end
 
---- Hot waits in a coroutine that expects to receive a delta value each time it
--- yields.
+--- Converts polar coordinates into cartesian coordinates.
+-- @param angle     is the angle for the point to be from the origin point
+-- @param magnitude is the distance for the point to be from origin
+-- @return two values, the x and y of the cartsian coordinates.
+function util.polar(angle, magnitude)
+    return math.cos(angle) * magnitude, math.sin(angle) * magnitude
+end
+
+--- Finds the angle between two tables that have got x and y values.
+-- @param a is the thing to look from.
+-- @param b is the thing to look to.
+-- @return the angle from a's position to b's.
+function util.angleBetween(a, b)
+    return math.atan2(b.y - a.y, b.x - a.x)
+end
+
+--- Gets the squared distance between two points. The point of this is that
+-- it's faster than getting the actual distance due to not needing to calculate
+-- a square root, and you can make use of this in some places instead.
+-- @param ax is the first point's x value
+-- @param ay is the first point's y value
+-- @param bx is the second point's x value
+-- @param by is the second point's y value
+-- @return the squared distance between these two points.
+function util.distanceSquared(ax, ay, bx, by)
+    local x = ax - bx
+    local y = ay - by
+    return x * x + y * y
+end
+
+--- Gets the distance between two points.
+-- @param ax is the first point's x value
+-- @param ay is the first point's y value
+-- @param bx is the second point's x value
+-- @param by is the second point's y value
+-- @return the distance between these two points.
+function util.distance(ax, ay, bx, by)
+    return math.sqrt(util.distanceSquared(ax, ay, bx, by))
+end
+
+--- Hot waits in a coroutine that expects to receive a time delta value each
+-- time it yields.
 -- @param time is the time to wait for
 function util.wait(time)
-    while time > 0 do
-        time = time - coroutine.yield()
+    local count = 0
+    while count < time do
+        count = count + coroutine.yield()
     end
-    return math.abs(time)
+    return count
 end
 
 return util
 
---assert((wrap(5, 4, 6)) == 5)
---assert((wrap(6, 4, 6)) == 4)
---assert((wrap(-1.5, 1, 6)) == 3.5)
