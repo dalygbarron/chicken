@@ -1,12 +1,14 @@
 --- This file is the start point of the game and is just for setting up the
 -- game and implementing love's callback functions and hooking them up to our
--- stuff.
+-- stuff. Ideally I don't want anything too game related in here but we shall
+-- see about that.
 
 local util = require 'util'
 local types = require 'types'
 local game = require 'game'
 
 function love.load()
+    collectgarbage('stop')
     love.graphics.setNewFont(20)
     game.playerProtobullet = types.protobullet(
         game.assets:getPic('playerBullet.png')

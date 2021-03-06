@@ -5,8 +5,20 @@
 -- cool, whereas adding code telling the game what the main menu should say or
 -- whatever probably is not cool.
 
+function initBullet (bullet)
+    bullet.x = 0
+    bullet.y = 0
+    bullet.vx = 0
+    bullet.vy = 0
+    bullet.gx = 0
+    bullet.gy = 0
+    bullet.proto = nil
+    bullet.owner = nil
+end
+
 local util = require 'util'
 local assets = require 'assets'
+local pool = require 'pool'
 local types = require 'types'
 
 local game = {
@@ -15,6 +27,7 @@ local game = {
     debug = true,
     playerShotCooldown = 0.1,
     playerSpeed = 250,
+    playerStrafeSpeed = 150,
     messageTime = 0.6,
     -- game globals
     frameTimer = 0,
@@ -22,10 +35,10 @@ local game = {
     bgg = 0.1,
     bgb = 0.01,
     assets = assets('assets/'),
+    bulletPool = pool(1024, initBullet),
     script = nil,
     message = nil,
     music = nil,
-    bullets = {},
     actors = {},
     playerBulletPrototype = nil,
     player = nil,
@@ -53,51 +66,67 @@ function game.createPauseMenu(self)
     )
 end
 
---- Creates the player's actor. TODO: probably remove.
+--- Creates the player's actor and sets it on the game object.
 -- also sets it as the player.
 -- @param self is the game object.
 -- @return the player actor.
 function game.createPlayer(self)
+    local strafe = false
     local cooldown = 0
     local gunCycle = 0
-    self.player = types.actor(game.assets:getPic('plane.png'), 200, 600)
-    self.player.health = 10
+    self.player = types.actor{
+        img = game.assets:getPic('plane.png'),
+        x = 200,
+        y = 600,
+        radius = 5
+    }
     self.player.control = coroutine.create(function ()
         while self.player.health > 0 do
             local delta = coroutine.yield()
             self.player.vx = 0
             self.player.vy = 0
+            strafe =  love.keyboard.isDown('lshift')
+            local speed = strafe and self.playerStrafeSpeed or self.playerSpeed
             if love.keyboard.isDown('up') then
-                self.player.vy =  -self.playerSpeed
+                self.player.vy =  -speed
             elseif love.keyboard.isDown('down') then
-                self.player.vy = self.playerSpeed
+                self.player.vy = speed
             end
             if love.keyboard.isDown('left') then
-                self.player.vx = -self.playerSpeed
+                self.player.vx = -speed
             elseif love.keyboard.isDown('right') then
-                self.player.vx = self.playerSpeed
+                self.player.vx = speed
             end
             -- shooting
             cooldown = cooldown - delta
             if love.keyboard.isDown('z') then
-                gunCycle = self.gunCycle + delta
+                gunCycle = gunCycle + delta
                 if cooldown <= 0 then
-                    table.insert(
-                        self.bullets,
-                        types.bullet(
-                            self.playerProtobullet,
-                            self.player,
-                            util.polar(
-                                math.pi + math.sin(gunCycle * 9) * 0.09,
-                                500
-                            )
-                        )
+                    local bullet = self.bulletPool.get()
+                    bullet.proto = self.playerProtobullet
+                    bullet.owner = self.player
+                    bullet.x = self.player.x
+                    bullet.y = self.player.y
+                    bullet.vx, bullet.vy = util.polar(
+                        -math.pi * 0.5 + math.sin(gunCycle * 9) * 0.09,
+                        500
                     )
                     cooldown = self.playerShotCooldown
                 end
             end
         end
     end)
+    self.player.draw = function ()
+        util.drawCentered(self.player.img, self.player.x, self.player.y)
+        if strafe then
+            love.graphics.circle(
+                'fill',
+                self.player.x,
+                self.player.y,
+                self.player.radius
+            )
+        end
+    end
     return self.player
 end
 
@@ -125,7 +154,7 @@ end
 -- @param delta is the timestep to use. This is allowed to change but should
 --              not do so while the player is actually doing stuff.
 function game.bulletUpdate(self, delta)
-    for i, bullet in ipairs(self.bullets) do
+    for i, bullet in self.bulletPool.iterate() do
         bullet.x = util.wrap(
             bullet.x + bullet.vx * delta,
             0,
@@ -135,7 +164,8 @@ function game.bulletUpdate(self, delta)
         bullet.vx = bullet.vx + bullet.gx * delta
         bullet.vy = bullet.vy + bullet.gy * delta
         if bullet.y < 0 or bullet.y >= love.graphics.getHeight() then
-            table.remove(self.bullets, i)
+            self.bulletPool.kill(i)
+            goto skip
         end
         for u, actor in ipairs(self.actors) do
             if bullet.owner ~= actor then
@@ -149,11 +179,12 @@ function game.bulletUpdate(self, delta)
                     -- TODO: maybe use a function for this so we can get a pain
                     --       sound effect for the player.
                     actor.health = actor.health - 1
-                    table.remove(self.bullets, i)
+                    self.bulletPool.kill(i)
                     break
                 end
             end
         end
+        ::skip::
     end
 end
 
@@ -169,21 +200,23 @@ function game.normalUpdate(self, delta)
     if love.keyboard.isDown('escape') then
         self:setMessage(self:createPauseMenu())
     end
-    if self.script ~= nil and coroutine.status(self.script) ~= 'dead' then
+    if self.script and coroutine.status(self.script) ~= 'dead' then
         assert(coroutine.resume(self.script, delta))
     else
         return false
     end
     for i, actor in ipairs(self.actors) do
-        if coroutine.status(actor.control) ~= 'dead' then
+        if actor.control and coroutine.status(actor.control) ~= 'dead' then
             assert(coroutine.resume(actor.control, delta))
+            actor.x = util.wrap(
+                actor.x + actor.vx * delta,
+                0,
+                love.graphics.getWidth()
+            )
+            actor.y = actor.y + actor.vy * delta
+        else
+            table.remove(self.actors, actor)
         end
-        actor.x = util.wrap(
-            actor.x + actor.vx * delta,
-            0,
-            love.graphics.getWidth()
-        )
-        actor.y = actor.y + actor.vy * delta
     end
     self:bulletUpdate(delta)
     return true
@@ -198,7 +231,7 @@ end
 -- @return true normally and false if the game should end now.
 function game.update(self, delta)
     self.frameTimer = self.frameTimer + delta
-    if self.message == nil then
+    if not self.message then
         while self.frameTimer > self.frameTime do
             self.frameTimer = self.frameTimer - self.frameTime
             local result = self:normalUpdate(self.frameTime)
@@ -208,6 +241,7 @@ function game.update(self, delta)
         self.messageCycle = self.messageCycle + delta
         self:bulletUpdate(delta)
     end
+    collectgarbage()
     return true
 end
 
@@ -251,9 +285,22 @@ function game.draw(self)
     love.graphics.clear(self.bgr, self.bgg, self.bgb)
     love.graphics.setColor(1, 1, 1)
     for i, actor in ipairs(self.actors) do
-        util.drawCentered(actor.img, actor.x, actor.y)
+        if actor.draw then
+            actor.draw()
+        else
+            if actor.rotate then
+                util.drawCentered(
+                    actor.img,
+                    actor.x,
+                    actor.y,
+                    math.atan2(actor.vy, actor.vx)
+                )
+            else
+                util.drawCentered(actor.img, actor.x, actor.y)
+            end
+        end
     end
-    for i, bullet in ipairs(self.bullets) do
+    for i, bullet in self.bulletPool.iterate() do
         util.drawCentered(bullet.proto.img, bullet.x, bullet.y)
     end
     if self.message ~= nil then self:messageDraw() end

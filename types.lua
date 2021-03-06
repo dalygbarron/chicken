@@ -39,28 +39,31 @@ function types.writeMessage(img, name, processor, ...)
     end
 end
 
---- Base function for creating an actor by filling all it's fields. Actually it
--- just sets health as 0 but there is really no need to set health here. An
--- actor is something that flies around under it's own free will in the game.
--- @param img    is the image to render the actor with.
--- @param x      is the starting x position
--- @param y      is the starting y position
--- @param health is the actor's starting health which defaults to 1.
--- @param radius is the actor's collision radius. If you omit this argument it
---               will use half the image width.
-function types.actor(img, x, y, health, radius)
-    if radius == nil then radius = img:getWidth() / 2 * 0.8 end
-    if health == nil then health = 1 end
-    return {
-        control = nil,
-        img = img,
-        x = x,
-        y = y,
-        vx = 0,
-        vy = 0,
-        health = health,
-        radiusSquared = radius * radius
-    }
+--- Creates an actor by taking a table containing whatever actor values you
+-- actually want to set, and setting the rest to default values. The fields
+-- that will be set in the final product are rotate boolean, img (which is
+-- mandatory), x, y, vx, vy, health, radius, radiusSquared (which will always
+-- equal radius^2). In order for the actor to actually work you also need to
+-- add a control coroutine but this is not added by default because it needs
+-- the actor object to operate on, you can also add a draw function if you
+-- want, but again it needs to be a closure with access to the actor object if
+-- it is to do anything useful.
+-- @param args is the table containing all you want to set. By the way if you
+--             add random shiet that is not actor related it will keep that
+--             too.
+-- @return the actor object with fields defaulted.
+function types.actor(args)
+    if not args.health then args.health = 1 end
+    if not args.radius then
+        args.radius = args.img:getWidth() * 0.4
+    end
+    args.radiusSquared = args.radius * args.radius
+    if not args.x then args.x = 0 end
+    if not args.y then args.y = 0 end
+    if not args.vx then args.vx = 0 end
+    if not args.vy then args.vy = 0 end
+    if not args.rotate then args.rotate = false end
+    return args
 end
 
 --- Creates a prototypal bullet that actual bullets are mere copies of.

@@ -57,11 +57,18 @@ end
 -- @param img is the image to draw.
 -- @param x   is the x position to draw.
 -- @param y   is the y position to draw.
-function util.drawCentered(img, x, y)
+-- @param rot is the rotation to draw with but defaults to 0.
+function util.drawCentered(img, x, y, rot)
+    if not rot then rot = 0 end
     love.graphics.draw(
         img,
-        x - img:getWidth() / 2,
-        y - img:getHeight() / 2
+        x,
+        y,
+        rot,
+        1,
+        1,
+        img:getWidth() / 2,
+        img:getHeight() / 2
     )
 end
 

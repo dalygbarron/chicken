@@ -38,11 +38,16 @@ function createNong(game, angle)
     local x, y = util.polar(angle, 9999)
     x = util.closer(x, 0, game.width - 0.0001)
     y = util.closer(y, 0, game.height - 0.0001)
-    local nong = types.actor(game.assets:getPic('plane.png'), x, y)
-    nong.vx, nong.vy = util.polar(
-        math.atan2(game.player.y - y, game.player.x - x),
-        60
-    )
+    local nong = types.actor{
+        img = game.assets:getPic('jap.png'),
+        x = x,
+        y = y,
+        vx, vy = util.polar(
+            math.atan2(game.player.y - y, game.player.x - x),
+            60
+        ),
+        rotate = true
+    }
     nong.control = coroutine.create(function ()
         while nong.health do
             local delta = util.wait(0.2)
@@ -62,10 +67,10 @@ return function (game)
     game.assets:getSong('ging.ogg'):play()
     util.wait(1)
     game:setMessage(createMainMenu(game.assets))
-    util.wait(5)
+    util.wait(2)
     for i=1, 20 do
         table.insert(game.actors, createNong(game, math.pi / 2.5 * i))
-        util.wait(0.8)
+        util.wait(1.5)
     end
     util.wait(2)
 end
