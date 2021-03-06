@@ -215,7 +215,7 @@ function game.normalUpdate(self, delta)
             )
             actor.y = actor.y + actor.vy * delta
         else
-            table.remove(self.actors, actor)
+            table.remove(self.actors, i)
         end
     end
     self:bulletUpdate(delta)
@@ -230,8 +230,8 @@ end
 --              pass the legit delta value.
 -- @return true normally and false if the game should end now.
 function game.update(self, delta)
-    self.frameTimer = self.frameTimer + delta
     if not self.message then
+        self.frameTimer = self.frameTimer + delta
         while self.frameTimer > self.frameTime do
             self.frameTimer = self.frameTimer - self.frameTime
             local result = self:normalUpdate(self.frameTime)

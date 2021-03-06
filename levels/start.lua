@@ -46,12 +46,12 @@ function createNong(game, angle)
             math.atan2(game.player.y - y, game.player.x - x),
             60
         ),
-        rotate = true
+        rotate = true,
+        health = 10
     }
     nong.control = coroutine.create(function ()
-        while nong.health do
+        while nong.health > 0 do
             local delta = util.wait(0.2)
-            print(delta)
             local gx, gy = util.polar(
                 math.atan2(game.player.y - nong.y, game.player.x - nong.x),
                 50
@@ -59,6 +59,7 @@ function createNong(game, angle)
             nong.vx = nong.vx + gx * delta
             nong.vy = nong.vy + gy * delta
         end
+        game.assets:getSound('death.wav'):play()
     end)
     return nong
 end
