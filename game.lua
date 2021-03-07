@@ -100,12 +100,8 @@ function game.createPlayer(self)
             if love.keyboard.isDown('z') then
                 gunCycle = gunCycle + delta
                 if cooldown <= 0 then
-                    local sway = 0.09
-                    local rate = 9
-                    if strafe then
-                        sway = 0.2
-                        rate = 4
-                    end
+                    local sway = strafe and 0.2 or 0.09
+                    local rate = strafe and 4 or 9
                     local bullet = self:shoot(
                         self.player,
                         self.playerBulletPrototype
