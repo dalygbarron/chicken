@@ -10,8 +10,9 @@ local game = require 'game'
 function love.load()
     collectgarbage('stop')
     love.graphics.setNewFont(20)
-    game.playerProtobullet = types.protobullet(
-        game.assets:getPic('playerBullet.png')
+    game.playerBulletPrototype = types.protobullet(
+        game.assets:getPic('playerBullet.png'),
+        game.assets:getSound('bip.wav')
     )
     table.insert(game.actors, game:createPlayer())
     game:setScript(require 'levels.start')

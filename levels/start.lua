@@ -10,7 +10,7 @@ function createCredits(ass)
         function (self, key)
             if key == 'h' then
                 times = times + 1
-                ass:getSound('spk.wav'):play()
+                ass:getSound('spk.wav'):clone():play()
                 if times > 6 then
                     return createMainMenu(ass)
                 end
@@ -59,7 +59,13 @@ function createNong(game, angle)
             nong.vx = nong.vx + gx * delta
             nong.vy = nong.vy + gy * delta
         end
+        nong.img = game.assets:getPic('dead.png')
         game.assets:getSound('death.wav'):play()
+        nong.vx = 0
+        nong.vy = 0
+        nong.radius = -10
+        nong.radiusSquared = -100
+        util.wait(0.1)
     end)
     return nong
 end

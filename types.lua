@@ -67,13 +67,16 @@ function types.actor(args)
 end
 
 --- Creates a prototypal bullet that actual bullets are mere copies of.
--- @param img is the bullet image which provides the radius and stuff
+-- @param img   is the bullet image which provides the radius and stuff
+-- @param sound is the sound effect to play when the bullet is fired. It can be
+--              nil tho.
 -- @return the protobullet
-function types.protobullet(img)
-    local radius = img:getWidth() / 2
+function types.protobullet(img, sound)
+    local radius = img:getWidth() * 0.4
     return {
         img = img,
-        radiusSquared = radius * radius
+        radiusSquared = radius * radius,
+        sound = sound
     }
 end
 

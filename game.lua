@@ -5,6 +5,11 @@
 -- cool, whereas adding code telling the game what the main menu should say or
 -- whatever probably is not cool.
 
+local util = require 'util'
+local assets = require 'assets'
+local pool = require 'pool'
+local types = require 'types'
+
 function initBullet (bullet)
     bullet.x = 0
     bullet.y = 0
@@ -15,11 +20,6 @@ function initBullet (bullet)
     bullet.proto = nil
     bullet.owner = nil
 end
-
-local util = require 'util'
-local assets = require 'assets'
-local pool = require 'pool'
-local types = require 'types'
 
 local game = {
     -- constants
@@ -42,8 +42,6 @@ local game = {
     actors = {},
     playerBulletPrototype = nil,
     player = nil,
-    playerCooldown = 0,
-    gunCycle = 0,
     messageCycle = 0,
     width = love.graphics.getWidth(),
     height = love.graphics.getHeight()
@@ -102,13 +100,20 @@ function game.createPlayer(self)
             if love.keyboard.isDown('z') then
                 gunCycle = gunCycle + delta
                 if cooldown <= 0 then
-                    local bullet = self.bulletPool.get()
-                    bullet.proto = self.playerProtobullet
-                    bullet.owner = self.player
+                    local sway = 0.09
+                    local rate = 9
+                    if strafe then
+                        sway = 0.2
+                        rate = 4
+                    end
+                    local bullet = self:shoot(
+                        self.player,
+                        self.playerBulletPrototype
+                    )
                     bullet.x = self.player.x
                     bullet.y = self.player.y
                     bullet.vx, bullet.vy = util.polar(
-                        -math.pi * 0.5 + math.sin(gunCycle * 9) * 0.09,
+                        -math.pi * 0.5 + math.sin(gunCycle * rate) * sway,
                         500
                     )
                     cooldown = self.playerShotCooldown
@@ -147,6 +152,19 @@ function game.setScript(self, func)
     self.script = coroutine.create(func)
     local code, err = coroutine.resume(self.script, self)
     if not code then print(err) end
+end
+
+--- Does the generic bullet shooting stuff but doesn't set any fields besides
+-- owner and proto.
+-- @param self  is the game object.
+-- @param owner is the person shooting out the bullet.
+-- @param proto is the prototype of bullet that we are shooting out.
+function game.shoot(self, owner, proto)
+    local bullet = self.bulletPool.get()
+    bullet.proto = proto
+    bullet.owner = owner
+    if proto.sound then proto.sound:clone():play() end
+    return bullet
 end
 
 --- Updates the bullets that are in the game right now.
