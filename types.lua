@@ -35,8 +35,9 @@ end
 function types.writeMessage(img, name, processor, ...)
     local text = ''
     for i, v in ipairs(arg) do
-        -- TODO: everything
+        text = text..v
     end
+    return types.message(img, name, text, processor)
 end
 
 --- Creates an actor by taking a table containing whatever actor values you

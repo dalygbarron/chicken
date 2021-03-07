@@ -21,16 +21,21 @@ function createCredits(ass)
 end
 
 function createMainMenu(ass)
-    return types.message(
-        ass:getPic('idiot.png'),
-        'Brexit Gunner',
-        'Welcome to Brexit Gunner, press z to play, press p to read the credits',
+    return types.writeMessage(
+        ass:getPic('tony.png'),
+        'Tony Abbot',
         function (self, key)
             if key == 'z' then return nil
             elseif key == 'p' then return createCredits(ass)
             else return self
             end
-        end
+        end,
+        'Welcome, Brexit Gunner, we need your help.',
+        '',
+        'Japanese spacecrafts are on the move and only hours from reaching',
+        'Nimbin. We need you to take them down and teach those Gook bastards',
+        'a lesson. Press Z to accept the mission. Press P to view the',
+        'credits. Press G to receive great wisdom.'
     )
 end
 
