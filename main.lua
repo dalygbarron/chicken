@@ -5,10 +5,12 @@
 
 local util = require 'util'
 local types = require 'types'
+local atlas = require 'atlas'
 local game = require 'game'
 
 function love.load()
     collectgarbage('stop')
+    game.atlas = atlas('assets/sprites.yeet', 'assets/sprites.png', 'sprites')
     love.graphics.setNewFont(20)
     game.playerBulletPrototype = types.protobullet(
         game.assets:getPic('playerBullet.png'),

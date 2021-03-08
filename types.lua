@@ -2,6 +2,8 @@
 -- bullet and messages etc, plus some functions for different ways of
 -- constructing them that are convenient.
 
+local util = require 'util'
+
 local types = {}
 
 --- Base function for creating a message object, which takes all it's
@@ -34,10 +36,30 @@ end
 -- @return the new message you have created.
 function types.writeMessage(img, name, processor, ...)
     local text = ''
-    for i, v in ipairs(arg) do
-        text = text..v
+    for i, v in ipairs({...}) do
+        if string.len(v) == 0 then
+            text = text..'\n'
+        elseif not util.white(text:sub(-1, -1), v:sub(0, 0)) then
+            text = text..' '..v
+        else
+            text = text..v
+        end
     end
     return types.message(img, name, text, processor)
+end
+
+--- Creates a backgroundlayer object.
+-- @param img   is the image to draw this layer with.
+-- @param ratio is the ratio of the current overall background movement rate to
+--              the rate at which this layer moves.
+function types.backgroundLayer(quad, ratio)
+    if ratio == nil then
+        ratio = 1
+    end
+    return {
+        quad = quad,
+        ratio = ratio
+    }
 end
 
 --- Creates an actor by taking a table containing whatever actor values you

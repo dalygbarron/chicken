@@ -4,6 +4,21 @@
 
 local util = {}
 
+--- Tells you if the given strings consist of whitespace only. They all have to
+-- be fully white so consider everything you pass to be logically anded
+-- together.
+-- @param ... is all the strings to check.
+-- @return true if they are all fully white and false if not.
+function util.white(...)
+    local args = {...}
+    for i, v in ipairs(args) do
+        if string.match(v, '%g') then
+            return false
+        end
+    end
+    return true
+end
+
 --- Takes a number and wraps it between a maximum value and 0.
 -- @param value is the value to wrap
 -- @param max   is the value at which it wraps back to 0.

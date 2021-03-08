@@ -1,3 +1,25 @@
 local util = require 'util'
 
-print(util.closer(5, 0, 10))
+function select(n, ...)
+    local args = {...}
+    return args[n]
+end
+
+function iter(...)
+    for i, v in ipairs({...}) do
+        print(i, v)
+    end
+end
+
+items = {
+    'tango is a nerd',
+    'he is very evil',
+    'hellk yeah'
+}
+
+print(select(1, table.unpack(items)))
+iter(table.unpack(items))
+
+local str = 'hello hello'
+
+print(str[1])

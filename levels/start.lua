@@ -33,8 +33,10 @@ function createMainMenu(ass)
         'Welcome, Brexit Gunner, we need your help.',
         '',
         'Japanese spacecrafts are on the move and only hours from reaching',
-        'Nimbin. We need you to take them down and teach those Gook bastards',
-        'a lesson. Press Z to accept the mission. Press P to view the',
+        'Nimbin. We need you to take them down and teach those bastards',
+        'a lesson.',
+        '',
+        'Press Z to accept the mission. Press P to view the',
         'credits. Press G to receive great wisdom.'
     )
 end
