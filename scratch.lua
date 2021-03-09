@@ -23,3 +23,5 @@ iter(table.unpack(items))
 local str = 'hello hello'
 
 print(str[1])
+
+assert(0, 'Is zero falsy?')

@@ -76,7 +76,7 @@ function game.createPlayer(self)
     local cooldown = 0
     local gunCycle = 0
     self.player = types.actor{
-        img = game.assets:getPic('plane.png'),
+        quad = game.atlas.getQuad('plane.png'),
         x = 200,
         y = 600,
         radius = 5
@@ -123,12 +123,7 @@ function game.createPlayer(self)
     self.player.draw = function ()
         util.drawCentered(self.player.img, self.player.x, self.player.y)
         if strafe then
-            love.graphics.circle(
-                'fill',
-                self.player.x,
-                self.player.y,
-                self.player.radius
-            )
+            -- TODO: need a new way to do this.
         end
     end
     return self.player

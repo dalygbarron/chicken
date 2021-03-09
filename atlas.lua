@@ -3,35 +3,29 @@
 -- you run the atlas it searches for the output files and if they are already
 -- there then it does nothing, but if they are not present it generates them.
 
-local lineFormat = '>zJJJJ'
+local util = require 'util'
 
-function generate(outFile, outImg, inFolder)
-    local files = love.filesystem.getDirectoryItems(inFolder)
-    local text = ''
-    for i, v in ipairs(files) do
-        text = text..'\n'..love.data.pack('string', lineFormat, v, 1, 2, 3, 4)
-    end
-    assert(love.filesystem.write(outFile, text))
-    return true
-end
+local csvFormat = '([^,]+)'
 
 function loadQuads(file, img)
     local quads = {}
-    for line in love.filesystem.lines(outFile) do
-        local name, x, y, w, h = love.data.unpack('string', lineFormat, line)
+    for line in love.filesystem.lines(file) do
+        local bits = util.flatten(string.gmatch(line, csvFormat))
+        local name = bits[1]
+        x = assert(tonumber(bits[2]))
+        y = assert(tonumber(bits[3]))
+        w = assert(tonumber(bits[4]))
+        h = assert(tonumber(bits[5]))
+        print(name, x, y, w, h)
         quads[name] = love.graphics.newQuad(x, y, w, h, img)
     end
+    return quads
 end
 
-return function (outFile, outImg, inFolder)
-    local check = love.filesystem.getInfo
-    if not check(outFile) or not check(outImg) then
-        assert(generate(outFile, outImg, inFolder))
-    end
-    local img = love.graphics.newImage(outImg)
-    local spriteBatch = love.graphics.newSpriteBatch(outImg, 1500)
-    local quads = loadQuads(outFile, img)
-    assert(quads)
+return function (txtFile, imgFile)
+    local img = love.graphics.newImage(imgFile)
+    local spriteBatch = love.graphics.newSpriteBatch(img, 1500)
+    local quads = assert(loadQuads(txtFile, img))
     return {
         getQuad = function (name)
             return quads[name]

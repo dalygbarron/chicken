@@ -10,10 +10,10 @@ local game = require 'game'
 
 function love.load()
     collectgarbage('stop')
-    game.atlas = atlas('assets/sprites.yeet', 'assets/sprites.png', 'sprites')
+    game.atlas = atlas('assets/sprites.csv', 'assets/sprites.png', 'sprites')
     love.graphics.setNewFont(20)
     game.playerBulletPrototype = types.protobullet(
-        game.assets:getPic('playerBullet.png'),
+        game.atlas.getQuad('playerBullet.png'),
         game.assets:getSound('bip.wav')
     )
     table.insert(game.actors, game:createPlayer())

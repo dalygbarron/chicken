@@ -64,7 +64,7 @@ end
 
 --- Creates an actor by taking a table containing whatever actor values you
 -- actually want to set, and setting the rest to default values. The fields
--- that will be set in the final product are rotate boolean, img (which is
+-- that will be set in the final product are rotate boolean, quad (which is
 -- mandatory), x, y, vx, vy, health, radius, radiusSquared (which will always
 -- equal radius^2). In order for the actor to actually work you also need to
 -- add a control coroutine but this is not added by default because it needs
@@ -90,14 +90,15 @@ function types.actor(args)
 end
 
 --- Creates a prototypal bullet that actual bullets are mere copies of.
--- @param img   is the bullet image which provides the radius and stuff
+-- @param quad  is the bullet quad which provides the radius and stuff
 -- @param sound is the sound effect to play when the bullet is fired. It can be
 --              nil tho.
 -- @return the protobullet
-function types.protobullet(img, sound)
-    local radius = img:getWidth() * 0.4
+function types.protobullet(quad, sound)
+    local _, _, w, _ = quad:getViewport()
+    local radius = w * 0.4
     return {
-        img = img,
+        quad = quad,
         radiusSquared = radius * radius,
         sound = sound
     }

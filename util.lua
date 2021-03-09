@@ -138,5 +138,16 @@ function util.wait(time)
     return count
 end
 
+--- Takes an iterator and iterates over it and turns it into a table.
+-- @param iter is the iterator that it is flattening into a table.
+-- @return the table.
+function util.flatten(iter)
+    local items = {}
+    for v in iter do
+        table.insert(items, v)
+    end
+    return items
+end
+
 return util
 
