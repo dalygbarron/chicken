@@ -69,11 +69,11 @@ end
 
 --- Draws a love image thingy by passing the middle point instead of the top
 -- left corner.
--- @param img is the image to draw.
+-- @param quad is the quad to draw.
 -- @param x   is the x position to draw.
 -- @param y   is the y position to draw.
 -- @param rot is the rotation to draw with but defaults to 0.
-function util.drawCentered(img, x, y, rot)
+function util.drawCentered(quad, x, y, rot)
     if not rot then rot = 0 end
     love.graphics.draw(
         img,

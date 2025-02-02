@@ -121,7 +121,7 @@ function game.createPlayer(self)
         end
     end)
     self.player.draw = function ()
-        util.drawCentered(self.player.img, self.player.x, self.player.y)
+        util.drawCentered(self.player.quad, self.player.x, self.player.y)
         if strafe then
             -- TODO: need a new way to do this.
         end
@@ -297,6 +297,7 @@ function game.draw(self)
     love.graphics.clear(self.bgr, self.bgg, self.bgb)
     love.graphics.setColor(1, 1, 1)
     for i, actor in ipairs(self.actors) do
+        print(i, actor)
         if actor.draw then
             actor.draw()
         else
@@ -308,7 +309,7 @@ function game.draw(self)
                     math.atan2(actor.vy, actor.vx)
                 )
             else
-                util.drawCentered(actor.img, actor.x, actor.y)
+                util.drawCentered(actor.quad, actor.x, actor.y)
             end
         end
     end

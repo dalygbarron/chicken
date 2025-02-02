@@ -16,7 +16,6 @@ function loadQuads(file, img)
         y = assert(tonumber(bits[3]))
         w = assert(tonumber(bits[4]))
         h = assert(tonumber(bits[5]))
-        print(name, x, y, w, h)
         quads[name] = love.graphics.newQuad(x, y, w, h, img)
     end
     return quads
@@ -28,7 +27,7 @@ return function (txtFile, imgFile)
     local quads = assert(loadQuads(txtFile, img))
     return {
         getQuad = function (name)
-            return quads[name]
+            return assert(quads[name])
         end,
         drawQuad = function (quad)
 
